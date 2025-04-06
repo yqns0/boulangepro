@@ -1,0 +1,9 @@
+[build]
+  publish = "."
+  command = "echo 'No build command needed for static site'"
+
+# Redirection pour le routage côté client (SPA)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

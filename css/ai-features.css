@@ -1,0 +1,119 @@
+/* Styles pour les fonctionnalités d'IA */
+
+/* Badge IA */
+.ai-badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    margin-left: 0.5rem;
+    color: #ffffff;
+}
+
+.ai-badge.ai-online {
+    background-color: #4285F4; /* Bleu Google pour Gemini */
+}
+
+.ai-badge.ai-offline {
+    background-color: #f39c12; /* Orange pour les suggestions locales */
+}
+
+.ai-badge i {
+    font-size: 0.9rem;
+}
+
+/* Résultat de l'IA */
+.result-card {
+    position: relative;
+}
+
+.result-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.result-header h4 {
+    margin: 0;
+    color: #c0392b;
+    flex-grow: 1;
+    margin-right: 1rem;
+}
+
+.result-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+}
+
+/* Animation de chargement */
+.loading-indicator {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(0, 0, 0, 0.1);
+    border-radius: 50%;
+    border-top-color: #3498db;
+    animation: spin 1s ease-in-out infinite;
+    margin-bottom: 1rem;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Message d'erreur */
+.error-message {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background-color: rgba(231, 76, 60, 0.1);
+    border-left: 4px solid #e74c3c;
+    border-radius: 4px;
+}
+
+.error-message i {
+    font-size: 1.5rem;
+    color: #e74c3c;
+}
+
+/* Message d'information */
+.info-message {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background-color: rgba(52, 152, 219, 0.1);
+    border-left: 4px solid #3498db;
+    border-radius: 4px;
+}
+
+.info-message i {
+    font-size: 1.5rem;
+    color: #3498db;
+}
+
+/* Bouton mode hors ligne */
+#toggle-offline-mode {
+    margin-left: 1rem;
+}
+
+#toggle-offline-mode.offline {
+    background-color: #f39c12;
+    color: white;
+    border-color: #f39c12;
+}

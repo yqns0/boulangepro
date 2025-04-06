@@ -1,0 +1,6 @@
+{
+  "name": "boulangepro-client",
+  "version": "1.0.0",
+  "description": "Client pour l'application BoulangePro",
+  "type": "module"
+}

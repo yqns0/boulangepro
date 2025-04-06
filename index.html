@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BoulangePro - Votre assistant de boulangerie-pâtisserie</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/ai-features.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Poppins:wght@300;400;500;600&family=Pacifico&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+        <p>Chargement...</p>
+    </div>
+
+    <header>
+        <div class="logo">
+            <img src="images/logo.png" alt="BoulangePro Logo">
+            <h1>BoulangePro</h1>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="#" class="active" data-page="home"><i class="fas fa-home"></i> Accueil</a></li>
+                <li><a href="#" data-page="recipes"><i class="fas fa-book"></i> Mes Recettes</a></li>
+                <li><a href="#" data-page="ingredients"><i class="fas fa-shopping-basket"></i> Ingrédients</a></li>
+                <li><a href="#" data-page="calculator"><i class="fas fa-calculator"></i> Calculateur</a></li>
+                <li><a href="#" data-page="news"><i class="fas fa-lightbulb"></i> Nouveautés</a></li>
+            </ul>
+        </nav>
+        <div class="user-menu">
+            <button class="theme-toggle"><i class="fas fa-moon"></i></button>
+            <div class="user-dropdown">
+                <button class="user-dropdown-btn"><i class="fas fa-user"></i> <span id="user-name">Utilisateur</span></button>
+                <div class="user-dropdown-content">
+                    <a href="#" id="profile-link"><i class="fas fa-id-card"></i> Mon profil</a>
+                    <a href="#" id="logout-link"><i class="fas fa-sign-out-alt"></i> Déconnexion</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- Page d'accueil -->
+        <section id="home" class="page active">
+            <div class="hero">
+                <h2>Bienvenue sur BoulangePro</h2>
+                <p>Votre assistant quotidien pour la gestion de vos recettes et le calcul de vos coûts</p>
+                <div class="cta-buttons">
+                    <button class="btn primary" data-page="recipes">Gérer mes recettes</button>
+                    <button class="btn secondary" data-page="calculator">Calculer un coût</button>
+                </div>
+            </div>
+            
+            <div class="features">
+                <div class="feature-card">
+                    <i class="fas fa-book"></i>
+                    <h3>Créez vos recettes</h3>
+                    <p>Créez, éditez et organisez toutes vos recettes en un seul endroit</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-calculator"></i>
+                    <h3>Calculez vos coûts</h3>
+                    <p>Déterminez précisément le coût de vos créations</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-balance-scale"></i>
+                    <h3>Ajustez les quantités</h3>
+                    <p>Multipliez ou divisez facilement vos recettes</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-lightbulb"></i>
+                    <h3>Découvrez des nouveautés</h3>
+                    <p>Inspirez-vous avec des idées générées par IA</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Page des recettes -->
+        <section id="recipes" class="page">
+            <div class="page-header">
+                <h2>Mes Recettes</h2>
+                <button class="btn primary" id="new-recipe-btn"><i class="fas fa-plus"></i> Nouvelle recette</button>
+            </div>
+            
+            <div class="search-filter">
+                <div class="search-bar">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Rechercher une recette...">
+                </div>
+                <div class="filter-options">
+                    <select id="category-filter">
+                        <option value="">Toutes catégories</option>
+                        <option value="patisserie">Pâtisserie</option>
+                        <option value="boulangerie">Boulangerie</option>
+                        <option value="viennoiserie">Viennoiserie</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="recipes-grid" id="recipes-container">
+                <!-- Les recettes seront ajoutées dynamiquement ici -->
+                <div class="recipe-card">
+                    <div class="recipe-image" style="background-image: url('images/croissant.jpg')"></div>
+                    <div class="recipe-info">
+                        <h3>Croissants au beurre</h3>
+                        <p class="recipe-category">Viennoiserie</p>
+                        <div class="recipe-meta">
+                            <span><i class="fas fa-euro-sign"></i> 0.85€/pièce</span>
+                            <span><i class="fas fa-clock"></i> 3h30</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="recipe-card">
+                    <div class="recipe-image" style="background-image: url('images/opera.jpg')"></div>
+                    <div class="recipe-info">
+                        <h3>Gâteau Opéra</h3>
+                        <p class="recipe-category">Pâtisserie</p>
+                        <div class="recipe-meta">
+                            <span><i class="fas fa-euro-sign"></i> 2.30€/part</span>
+                            <span><i class="fas fa-clock"></i> 2h45</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="recipe-card">
+                    <div class="recipe-image" style="background-image: url('images/baguette.jpg')"></div>
+                    <div class="recipe-info">
+                        <h3>Baguette Tradition</h3>
+                        <p class="recipe-category">Boulangerie</p>
+                        <div class="recipe-meta">
+                            <span><i class="fas fa-euro-sign"></i> 0.45€/pièce</span>
+                            <span><i class="fas fa-clock"></i> 4h</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Page des ingrédients -->
+        <section id="ingredients" class="page">
+            <div class="page-header">
+                <h2>Gestion des Ingrédients</h2>
+                <button class="btn primary" id="new-ingredient-btn"><i class="fas fa-plus"></i> Nouvel ingrédient</button>
+            </div>
+            
+            <div class="search-filter">
+                <div class="search-bar">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Rechercher un ingrédient...">
+                </div>
+                <div class="filter-options">
+                    <select id="ingredient-category-filter">
+                        <option value="">Toutes catégories</option>
+                        <option value="farine">Farines</option>
+                        <option value="sucre">Sucres</option>
+                        <option value="produit-laitier">Produits laitiers</option>
+                        <option value="fruit">Fruits</option>
+                        <option value="chocolat">Chocolats</option>
+                        <option value="autre">Autres</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="ingredients-table-container">
+                <table class="ingredients-table">
+                    <thead>
+                        <tr>
+                            <th>Nom</th>
+                            <th>Catégorie</th>
+                            <th>Prix unitaire</th>
+                            <th>Unité</th>
+                            <th>Stock</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ingredients-list">
+                        <!-- Les ingrédients seront ajoutés dynamiquement ici -->
+                        <tr>
+                            <td>Farine T55</td>
+                            <td>Farines</td>
+                            <td>0.80€/kg</td>
+                            <td>kg</td>
+                            <td>25</td>
+                            <td>
+                                <button class="btn-icon edit-btn"><i class="fas fa-edit"></i></button>
+                                <button class="btn-icon delete-btn"><i class="fas fa-trash"></i></button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Beurre AOP</td>
+                            <td>Produits laitiers</td>
+                            <td>12.50€/kg</td>
+                            <td>kg</td>
+                            <td>5</td>
+                            <td>
+                                <button class="btn-icon edit-btn"><i class="fas fa-edit"></i></button>
+                                <button class="btn-icon delete-btn"><i class="fas fa-trash"></i></button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Sucre cristal</td>
+                            <td>Sucres</td>
+                            <td>1.20€/kg</td>
+                            <td>kg</td>
+                            <td>10</td>
+                            <td>
+                                <button class="btn-icon edit-btn"><i class="fas fa-edit"></i></button>
+                                <button class="btn-icon delete-btn"><i class="fas fa-trash"></i></button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Page calculateur -->
+        <section id="calculator" class="page">
+            <div class="page-header">
+                <h2>Calculateur de Coûts</h2>
+            </div>
+            
+            <div class="calculator-container">
+                <div class="calculator-sidebar">
+                    <div class="recipe-selector">
+                        <h3>Sélectionner une recette</h3>
+                        <select id="recipe-select">
+                            <option value="">Choisir une recette</option>
+                            <!-- Les recettes seront chargées dynamiquement -->
+                        </select>
+                    </div>
+                    
+                    <div class="quantity-adjuster">
+                        <h3>Ajuster les quantités</h3>
+                        <div class="adjuster-controls">
+                            <div class="adjuster-row">
+                                <label>Multiplier par:</label>
+                                <div class="adjuster-input">
+                                    <input type="number" id="multiply-factor" value="1" min="0.1" step="0.1">
+                                    <button class="btn small" id="apply-multiply">Appliquer</button>
+                                </div>
+                            </div>
+                            
+                            <div class="adjuster-row">
+                                <label>Nombre de pièces:</label>
+                                <div class="adjuster-input">
+                                    <input type="number" id="pieces-count" value="10" min="1">
+                                    <button class="btn small" id="apply-pieces">Appliquer</button>
+                                </div>
+                            </div>
+
+                            <div class="adjuster-row">
+                                <label>Poids par pièce (g):</label>
+                                <div class="adjuster-input">
+                                    <input type="number" id="piece-weight" value="80" min="1">
+                                    <button class="btn small" id="apply-piece-weight">Appliquer</button>
+                                </div>
+                            </div>
+
+                            <div class="adjuster-row">
+                                <label>Poids total (g):</label>
+                                <div class="adjuster-input">
+                                    <input type="number" id="total-weight" value="1000" min="1">
+                                    <button class="btn small" id="apply-weight">Appliquer</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="calculator-main">
+                    <div class="recipe-ingredients">
+                        <h3>Ingrédients de la recette</h3>
+                        <table class="ingredients-table">
+                            <thead>
+                                <tr>
+                                    <th>Ingrédient</th>
+                                    <th>Quantité</th>
+                                    <th>Coût</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recipe-ingredients-list">
+                                <!-- Les ingrédients seront ajoutés dynamiquement ici -->
+                                <tr>
+                                    <td>Farine T55</td>
+                                    <td>500g</td>
+                                    <td>0.40€</td>
+                                </tr>
+                                <tr>
+                                    <td>Beurre AOP</td>
+                                    <td>250g</td>
+                                    <td>3.13€</td>
+                                </tr>
+                                <tr>
+                                    <td>Sucre cristal</td>
+                                    <td>100g</td>
+                                    <td>0.12€</td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="2" class="total-label">Coût total des ingrédients:</td>
+                                    <td id="ingredients-total-cost">3.65€</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                    
+                    <div class="cost-summary">
+                        <h3>Résumé des coûts</h3>
+                        <div class="cost-card">
+                            <div class="cost-item">
+                                <span class="cost-label">Coût total des ingrédients:</span>
+                                <span class="cost-value" id="summary-ingredients-cost">3.65€</span>
+                            </div>
+                            <div class="cost-item">
+                                <span class="cost-label">Coût par pièce (10 pièces):</span>
+                                <span class="cost-value" id="cost-per-piece">0.37€</span>
+                            </div>
+                            <div class="cost-item">
+                                <span class="cost-label">Coût par 100g (850g total):</span>
+                                <span class="cost-value" id="cost-per-100g">0.43€</span>
+                            </div>
+                            <div class="cost-item margin-section">
+                                <span class="cost-label">Prix de vente suggéré par pièce (marge 70%):</span>
+                                <span class="cost-value" id="suggested-price">1.22€</span>
+                            </div>
+                        </div>
+                        
+                        <div class="pricing-calculator">
+                            <h4>Calculateur de prix de vente</h4>
+                            <div class="pricing-controls">
+                                <div class="pricing-row">
+                                    <label>Marge souhaitée (%):</label>
+                                    <input type="number" id="margin-percentage" value="70" min="0" max="100">
+                                </div>
+                                <div class="pricing-row">
+                                    <label>Prix de vente calculé:</label>
+                                    <span id="calculated-price">1.22€</span>
+                                </div>
+                                <button class="btn primary" id="update-price">Mettre à jour</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Page nouveautés -->
+        <section id="news" class="page">
+            <div class="page-header">
+                <h2>Nouveautés & Inspirations</h2>
+            </div>
+            
+            <div class="ai-inspiration">
+                <div class="inspiration-header">
+                    <h3>Générer des idées avec l'IA</h3>
+                    <p>Laissez notre IA vous inspirer avec de nouvelles recettes et idées</p>
+                </div>
+                
+                <div class="inspiration-generator">
+                    <div class="generator-controls">
+                        <div class="generator-row">
+                            <label>Type de création:</label>
+                            <select id="creation-type">
+                                <option value="patisserie">Pâtisserie</option>
+                                <option value="boulangerie">Boulangerie</option>
+                                <option value="viennoiserie">Viennoiserie</option>
+                                <option value="snacking">Snacking</option>
+                            </select>
+                        </div>
+                        <div class="generator-row">
+                            <label>Ingrédients clés (optionnel):</label>
+                            <input type="text" id="key-ingredients" placeholder="Ex: fraise, pistache, chocolat">
+                        </div>
+                        <div class="generator-row">
+                            <label>Occasion:</label>
+                            <select id="occasion-type">
+                                <option value="quotidien">Quotidien</option>
+                                <option value="special">Occasion spéciale</option>
+                                <option value="saison">Produit de saison</option>
+                            </select>
+                        </div>
+                        <button class="btn primary" id="generate-idea">Générer une idée</button>
+                        <button class="btn outline" id="toggle-offline-mode">Utiliser les suggestions locales</button>
+                    </div>
+                </div>
+                
+                <div class="inspiration-result" id="ai-result">
+                    <div class="result-card">
+                        <div class="result-header">
+                            <h4>Tarte Fraise-Pistache Revisitée</h4>
+                            <span class="result-tag">Pâtisserie</span>
+                        </div>
+                        <div class="result-content">
+                            <p>Une tarte moderne associant la fraîcheur des fraises de saison à la douceur de la pistache. La base est composée d'une pâte sablée croustillante, surmontée d'une crème de pistache légère et d'un arrangement géométrique de fraises fraîches glacées.</p>
+                            <h5>Ingrédients principaux:</h5>
+                            <ul>
+                                <li>Fraises fraîches</li>
+                                <li>Pâte de pistache</li>
+                                <li>Crème pâtissière</li>
+                                <li>Pâte sablée</li>
+                            </ul>
+                            <h5>Technique signature:</h5>
+                            <p>Glaçage miroir vert pâle sur les fraises pour un effet visuel saisissant.</p>
+                        </div>
+                        <div class="result-actions">
+                            <button class="btn secondary" id="save-inspiration">Sauvegarder l'idée</button>
+                            <button class="btn outline" id="create-from-inspiration">Créer une recette</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modals -->
+    <div class="modal" id="recipe-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Créer une nouvelle recette</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="recipe-form">
+                    <div class="form-group">
+                        <label for="recipe-name">Nom de la recette</label>
+                        <input type="text" id="recipe-name" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="recipe-image">Photo de la recette</label>
+                        <div class="image-upload-container">
+                            <div class="image-preview" id="recipe-image-preview">
+                                <i class="fas fa-image"></i>
+                                <span>Aucune image</span>
+                            </div>
+                            <div class="image-upload-controls">
+                                <label for="recipe-image-upload" class="btn secondary small">
+                                    <i class="fas fa-upload"></i> Choisir une image
+                                </label>
+                                <input type="file" id="recipe-image-upload" accept="image/*" style="display: none;">
+                                <button type="button" id="remove-recipe-image" class="btn outline small" disabled>
+                                    <i class="fas fa-trash"></i> Supprimer
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="recipe-category">Catégorie</label>
+                        <select id="recipe-category" required>
+                            <option value="patisserie">Pâtisserie</option>
+                            <option value="boulangerie">Boulangerie</option>
+                            <option value="viennoiserie">Viennoiserie</option>
+                            <option value="snacking">Snacking</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="recipe-yield">Rendement</label>
+                        <div class="yield-inputs">
+                            <input type="number" id="recipe-yield-quantity" min="1" value="1" required>
+                            <select id="recipe-yield-unit">
+                                <option value="pieces">Pièces</option>
+                                <option value="grammes">Grammes</option>
+                                <option value="kg">Kilogrammes</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="recipe-time">Temps de préparation (minutes)</label>
+                        <input type="number" id="recipe-time" min="1" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="recipe-piece-weight">Poids par pièce (grammes)</label>
+                        <input type="number" id="recipe-piece-weight" min="1" placeholder="Ex: 80g pour un croissant">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Ingrédients</label>
+                        <div id="ingredients-container">
+                            <div class="ingredient-row">
+                                <select class="ingredient-select">
+                                    <option value="">Sélectionner un ingrédient</option>
+                                    <option value="1">Farine T55</option>
+                                    <option value="2">Beurre AOP</option>
+                                    <option value="3">Sucre cristal</option>
+                                </select>
+                                <input type="number" class="ingredient-quantity" min="0" step="0.01" placeholder="Quantité">
+                                <select class="ingredient-unit">
+                                    <option value="g">g</option>
+                                    <option value="kg">kg</option>
+                                    <option value="ml">ml</option>
+                                    <option value="l">l</option>
+                                    <option value="pcs">pcs</option>
+                                </select>
+                                <button type="button" class="remove-ingredient btn-icon"><i class="fas fa-times"></i></button>
+                            </div>
+                        </div>
+                        <button type="button" id="add-ingredient" class="btn secondary small">Ajouter un ingrédient</button>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="recipe-instructions">Instructions</label>
+                        <textarea id="recipe-instructions" rows="5" required></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="recipe-notes">Notes (optionnel)</label>
+                        <textarea id="recipe-notes" rows="3"></textarea>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" class="btn outline" id="cancel-recipe">Annuler</button>
+                        <button type="submit" class="btn primary">Enregistrer</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="ingredient-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Ajouter un nouvel ingrédient</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="ingredient-form">
+                    <div class="form-group">
+                        <label for="ingredient-name">Nom de l'ingrédient</label>
+                        <input type="text" id="ingredient-name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="ingredient-category">Catégorie</label>
+                        <select id="ingredient-category" required>
+                            <option value="farine">Farines</option>
+                            <option value="sucre">Sucres</option>
+                            <option value="produit-laitier">Produits laitiers</option>
+                            <option value="fruit">Fruits</option>
+                            <option value="chocolat">Chocolats</option>
+                            <option value="autre">Autres</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="ingredient-price">Prix unitaire</label>
+                        <div class="price-input">
+                            <input type="number" id="ingredient-price" min="0.01" step="0.01" required>
+                            <span>€</span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="ingredient-unit">Unité de base</label>
+                        <select id="ingredient-unit" required>
+                            <option value="kg">Kilogramme (kg)</option>
+                            <option value="l">Litre (l)</option>
+                            <option value="pcs">Pièce (pcs)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="ingredient-stock">Stock actuel</label>
+                        <div class="stock-input">
+                            <input type="number" id="ingredient-stock" min="0" step="0.01" required>
+                            <span id="stock-unit">kg</span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="ingredient-notes">Notes (optionnel)</label>
+                        <textarea id="ingredient-notes" rows="2"></textarea>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" class="btn outline" id="cancel-ingredient">Annuler</button>
+                        <button type="submit" class="btn primary">Enregistrer</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-logo">
+                <img src="images/logo-small.png" alt="BoulangePro Logo">
+                <p>BoulangePro - Votre assistant de boulangerie-pâtisserie</p>
+            </div>
+            <div class="footer-links">
+                <h4>Liens rapides</h4>
+                <ul>
+                    <li><a href="#" data-page="home">Accueil</a></li>
+                    <li><a href="#" data-page="recipes">Recettes</a></li>
+                    <li><a href="#" data-page="ingredients">Ingrédients</a></li>
+                    <li><a href="#" data-page="calculator">Calculateur</a></li>
+                </ul>
+            </div>
+            <div class="footer-contact">
+                <h4>Contact</h4>
+                <p><i class="fas fa-envelope"></i> contact@boulangepro.fr</p>
+                <p><i class="fas fa-phone"></i> +33 1 23 45 67 89</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2023 BoulangePro. Tous droits réservés.</p>
+        </div>
+    </footer>
+
+    <!-- Charger l'API -->
+    <script src="js/api.js"></script>
+
+    <!-- Script d'authentification et d'initialisation -->
+    <script>
+        // Fonction pour récupérer un paramètre d'URL
+        function getUrlParameter(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+
+        // Fonction pour récupérer un cookie
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+        }
+
+        // Vérifier l'authentification
+        document.addEventListener('DOMContentLoaded', function() {
+            const loadingOverlay = document.getElementById('loading-overlay');
+            console.log('DOM chargé dans index.html');
+
+            // Vérifier si nous venons de la page d'authentification réussie
+            const isAuthSuccess = getUrlParameter('auth_success') === 'true';
+            console.log('Redirection depuis auth-success.html:', isAuthSuccess ? 'Oui' : 'Non');
+
+            // Afficher des informations de débogage
+            console.log('--- INFORMATIONS DE DÉBOGAGE ---');
+
+            // Vérifier localStorage
+            const localStorageToken = localStorage.getItem('token');
+            console.log('Token dans localStorage:', localStorageToken ? `Présent (longueur: ${localStorageToken.length})` : 'Absent');
+
+            // Vérifier sessionStorage
+            const sessionStorageToken = sessionStorage.getItem('token');
+            console.log('Token dans sessionStorage:', sessionStorageToken ? `Présent (longueur: ${sessionStorageToken.length})` : 'Absent');
+
+            // Vérifier les cookies
+            const cookieToken = getCookie('auth_token');
+            console.log('Token dans cookie:', cookieToken ? `Présent (longueur: ${cookieToken.length})` : 'Absent');
+
+            // Vérifier les paramètres d'URL
+            const tokenLength = getUrlParameter('token_length');
+            console.log('Longueur du token attendue:', tokenLength || 'Non spécifiée');
+
+            console.log('--- FIN DES INFORMATIONS DE DÉBOGAGE ---');
+
+            // Si nous venons de la page d'authentification mais qu'aucun token n'est trouvé
+            if (isAuthSuccess && !localStorageToken && !sessionStorageToken && !cookieToken) {
+                console.error('ERREUR CRITIQUE: Redirection depuis auth-success.html mais aucun token trouvé!');
+
+                // Afficher une alerte et rediriger vers la page de connexion après confirmation
+                alert('Erreur critique d\'authentification. Votre navigateur semble bloquer le stockage local. Veuillez autoriser les cookies et le stockage local pour ce site.');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Utiliser le premier token disponible
+            const token = localStorageToken || sessionStorageToken || cookieToken;
+
+            if (!token) {
+                console.log('Pas de token trouvé, redirection vers login.html');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Si nous avons un token, synchroniser toutes les sources
+            if (token) {
+                try {
+                    if (!localStorageToken) {
+                        localStorage.setItem('token', token);
+                        console.log('Token synchronisé vers localStorage');
+                    }
+
+                    if (!sessionStorageToken) {
+                        sessionStorage.setItem('token', token);
+                        console.log('Token synchronisé vers sessionStorage');
+                    }
+
+                    if (!cookieToken) {
+                        const expirationDate = new Date();
+                        expirationDate.setDate(expirationDate.getDate() + 30);
+                        document.cookie = `auth_token=${token}; expires=${expirationDate.toUTCString()}; path=/; SameSite=Strict`;
+                        console.log('Token synchronisé vers cookie');
+                    }
+                } catch (error) {
+                    console.error('Erreur lors de la synchronisation du token:', error);
+                }
+            }
+
+            console.log('Token trouvé, chargement de l\'application...');
+
+            console.log('Token trouvé, tentative d\'initialisation de l\'application...');
+
+            // Attendre que l'API soit chargée
+            setTimeout(async function() {
+                try {
+                    // Vérifier si l'API est disponible
+                    if (!window.api) {
+                        console.error('API non disponible');
+                        return;
+                    }
+
+                    console.log('API disponible, vérification de l\'authentification...');
+
+                    // Récupérer les informations de l'utilisateur
+                    const userData = await window.api.auth.getMe();
+
+                    // Afficher le nom de l'utilisateur
+                    document.getElementById('user-name').textContent = userData.data.name;
+
+                    // Gérer la déconnexion
+                    document.getElementById('logout-link').addEventListener('click', function(e) {
+                        e.preventDefault();
+                        window.api.auth.logout();
+                        window.location.href = 'login.html';
+                    });
+
+                    // Initialiser l'application
+                    await initApp();
+
+                } catch (error) {
+                    console.error('Erreur d\'initialisation:', error);
+                    // En cas d'erreur d'authentification, rediriger vers la page de connexion
+                    if (window.api) {
+                        window.api.auth.logout();
+                    }
+                    window.location.href = 'login.html';
+                } finally {
+                    // Masquer l'écran de chargement
+                    loadingOverlay.style.display = 'none';
+                }
+            }, 500); // Attendre 500ms pour s'assurer que l'API est chargée
+        });
+
+        // Initialiser l'application
+        async function initApp() {
+            try {
+                // Charger les données depuis l'API
+                const recipesResponse = await window.api.recipes.getAll();
+                const ingredientsResponse = await window.api.ingredients.getAll();
+
+                console.log('Recettes chargées:', recipesResponse);
+                console.log('Ingrédients chargés:', ingredientsResponse);
+
+                // Stocker les données dans des variables globales pour l'application
+                window.appData = {
+                    recipes: recipesResponse || [],
+                    ingredients: ingredientsResponse || []
+                };
+
+                // Initialiser l'application
+                initializeApp();
+            } catch (error) {
+                console.error('Erreur de chargement des données:', error);
+
+                // En cas d'erreur, initialiser avec des tableaux vides
+                window.appData = {
+                    recipes: [],
+                    ingredients: []
+                };
+
+                // Initialiser quand même l'application
+                initializeApp();
+
+                // Afficher un message d'erreur à l'utilisateur
+                alert('Une erreur est survenue lors du chargement des données. Veuillez rafraîchir la page.');
+            }
+        }
+    </script>
+    <script src="js/app.js"></script>
+</body>
+</html>
