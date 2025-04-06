@@ -91,6 +91,9 @@
                     authAlert.className = 'auth-alert info';
 
                     // Utiliser une approche sans async/await pour éviter les problèmes potentiels
+                    // Afficher l'URL complète utilisée pour la requête
+                    console.log('URL de connexion:', `${window.api.API_URL}/auth/login`);
+
                     window.api.auth.login({ email, password })
                         .then(function(response) {
                             console.log('Connexion réussie:', response);
@@ -115,10 +118,28 @@
                         .catch(function(error) {
                             console.error('Erreur de connexion:', error);
 
+                            // Afficher des informations détaillées sur l'erreur
+                            let errorMessage = 'Erreur de connexion: ';
+
+                            if (error.message) {
+                                errorMessage += error.message;
+                            } else {
+                                errorMessage += 'Erreur inconnue';
+                            }
+
+                            // Ajouter des informations de débogage
+                            errorMessage += '<br><small>Vérifiez la console pour plus de détails.</small>';
+
                             // Afficher l'erreur
-                            authAlert.textContent = error.message || 'Erreur de connexion au serveur';
+                            authAlert.innerHTML = errorMessage;
                             authAlert.style.display = 'block';
                             authAlert.className = 'auth-alert error';
+
+                            // Afficher des informations supplémentaires dans la console
+                            console.log('Détails de la requête:');
+                            console.log('- URL:', `${window.api.API_URL}/auth/login`);
+                            console.log('- Méthode:', 'POST');
+                            console.log('- Données:', { email, password: '********' });
                         });
                 });
             }, 500); // Attendre 500ms pour s'assurer que l'API est chargée

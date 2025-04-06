@@ -16,9 +16,13 @@ const app = express();
 
 // Middleware
 app.use(express.json({ limit: '50mb' }));
+
+// Configuration CORS plus permissive pour le débogage
 app.use(cors({
-  origin: ['https://boulangepro.netlify.app', 'http://localhost:5000', 'http://127.0.0.1:5000'],
-  credentials: true
+  origin: '*', // Permet toutes les origines pendant le débogage
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 // Routes

@@ -4,7 +4,7 @@ const isProduction = window.location.hostname !== 'localhost' && !window.locatio
 
 // Remplacez cette URL par celle de votre backend déployé sur Render
 const API_URL = isProduction
-    ? 'https://boulangepro-api.onrender.com/api'  // URL de l'API en production
+    ? 'https://boulangepro-api.onrender.com'  // URL de l'API en production (sans /api)
     : 'http://localhost:5000/api';  // URL de l'API en développement local
 
 console.log(`Environnement: ${isProduction ? 'Production' : 'Développement'}`);
@@ -558,6 +558,7 @@ const ai = {
 
 // Exporter les fonctions API
 const api = {
+    API_URL,
     auth,
     recipes,
     ingredients,
@@ -566,3 +567,6 @@ const api = {
 
 // Rendre l'API disponible globalement
 window.api = api;
+
+// Ajouter un log pour confirmer que l'API est bien chargée
+console.log('API chargée et disponible globalement');
