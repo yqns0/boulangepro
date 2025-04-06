@@ -51,6 +51,17 @@ router.get('/test-gemini', async (req, res) => {
 // Endpoint pour générer une idée de recette
 router.post('/generate-recipe-idea', async (req, res) => {
     try {
+        // Toujours utiliser la génération locale pour éviter les problèmes d'API
+        console.log('Génération d\'une idée de recette locale...');
+
+        // Générer une idée de secours
+        const fallbackIdea = generateFallbackRecipeIdea(req.body.creationType, req.body.occasion, req.body.currentMonth);
+        console.log('Idée générée:', fallbackIdea);
+
+        // Retourner l'idée générée
+        return res.json(fallbackIdea);
+
+        /* Commenté pour éviter les erreurs d'API
         // Vérifier si l'API Gemini est configurée
         if (!geminiConfig.apiKey || geminiConfig.apiKey === 'votre-cle-api-ici') {
             console.log('Clé API Gemini non configurée, utilisation du mode hors ligne');
@@ -66,6 +77,7 @@ router.post('/generate-recipe-idea', async (req, res) => {
                 message: 'Idée générée localement car la clé API Gemini n\'est pas configurée.'
             });
         }
+        */
 
         const { creationType, keyIngredients, occasion, currentMonth } = req.body;
 
@@ -310,9 +322,9 @@ function getCategoryName(category) {
     return categories[category] || 'Création Culinaire';
 }
 
-// Fonction pour générer une idée de recette de secours
+// Fonction pour générer une idée de recette créative
 function generateFallbackRecipeIdea(creationType, occasion, currentMonth) {
-    console.log('Génération d\'une idée de secours pour:', creationType);
+    console.log('Génération d\'une idée de recette pour:', creationType);
 
     // Obtenir les produits de saison pour le mois actuel
     const seasonalProduce = getSeasonalProduce(currentMonth);
@@ -323,95 +335,111 @@ function generateFallbackRecipeIdea(creationType, occasion, currentMonth) {
         return shuffled.slice(0, count);
     };
 
-    // Sélectionner des ingrédients en fonction du type de création
-    let ingredients = [];
-    let title = '';
-    let description = '';
-    let technique = '';
-
-    // Bases communes pour chaque type de création
-    const baseIngredients = {
-        'patisserie': ['farine', 'sucre', 'beurre', 'œufs', 'levure chimique'],
-        'boulangerie': ['farine', 'eau', 'sel', 'levure', 'farine complète'],
-        'viennoiserie': ['farine', 'beurre', 'sucre', 'œufs', 'lait'],
-        'snacking': ['farine', 'fromage', 'œufs', 'herbes aromatiques']
+    // Recettes prédéfinies par type de création
+    const predefinedRecipes = {
+        'patisserie': [
+            {
+                title: "Tarte Fraise-Pistache Revisitée",
+                description: "Une tarte moderne associant la fraîcheur des fraises de saison à la douceur de la pistache. La base est composée d'une pâte sablée croustillante, surmontée d'une crème de pistache légère et d'un arrangement géométrique de fraises fraîches glacées.",
+                ingredients: ["Fraises fraîches", "Pâte de pistache", "Crème pâtissière", "Pâte sablée", "Sucre glace", "Beurre de qualité"],
+                technique: "Glaçage miroir vert pâle sur les fraises pour un effet visuel saisissant."
+            },
+            {
+                title: "Éclair Café-Caramel au Beurre Salé",
+                description: "Une réinterprétation de l'éclair classique avec une ganache au café intense et un cœur coulant de caramel au beurre salé. La pâte à choux est légèrement croustillante à l'extérieur et moelleuse à l'intérieur, offrant un contraste parfait avec les garnitures.",
+                ingredients: ["Pâte à choux", "Café de spécialité", "Caramel au beurre salé", "Crème fleurette", "Chocolat noir", "Fleur de sel"],
+                technique: "Double cuisson de la pâte à choux pour une texture parfaite et un glaçage au café réalisé avec une infusion à froid."
+            },
+            {
+                title: "Dôme Chocolat-Framboise et Basilic",
+                description: "Un entremets sophistiqué combinant l'intensité du chocolat noir, l'acidité des framboises fraîches et la note aromatique surprenante du basilic. Le dôme repose sur un biscuit moelleux au chocolat et cache un insert de gelée de framboise au basilic.",
+                ingredients: ["Chocolat noir 70%", "Framboises fraîches", "Basilic frais", "Crème mascarpone", "Biscuit chocolat", "Gélatine"],
+                technique: "Glaçage miroir bicolore réalisé avec une technique de marbrure pour un effet visuel spectaculaire."
+            }
+        ],
+        'boulangerie': [
+            {
+                title: "Pain de Campagne aux Graines Anciennes",
+                description: "Un pain rustique à la mie alvéolée et à la croûte épaisse, enrichi d'un mélange de graines anciennes (quinoa, amarante, lin) pour une saveur complexe et des qualités nutritionnelles supérieures.",
+                ingredients: ["Farine T65", "Levain naturel", "Mélange de graines anciennes", "Sel de Guérande", "Eau filtrée", "Farine de seigle"],
+                technique: "Fermentation lente de 24h à basse température pour développer les arômes et faciliter la digestibilité."
+            },
+            {
+                title: "Baguette Tradition au Charbon Végétal",
+                description: "Une baguette tradition revisitée avec l'ajout de charbon végétal qui lui confère une couleur noire intense et des propriétés détoxifiantes. La mie est aérée et la croûte croustillante, avec une saveur légèrement fumée.",
+                ingredients: ["Farine tradition", "Charbon végétal actif", "Levure fraîche", "Sel fin", "Eau de source", "Farine de blé dur"],
+                technique: "Pétrissage minimal et façonnage spécifique pour préserver les alvéoles et obtenir une croûte parfaite."
+            },
+            {
+                title: "Pain Marbré Betterave et Curcuma",
+                description: "Un pain spectaculaire visuellement avec son marbrage naturel rose et jaune, obtenu grâce à des purées de betterave et de curcuma. Au-delà de l'aspect esthétique, ces ingrédients apportent des saveurs subtiles et des bienfaits nutritionnels.",
+                ingredients: ["Farine bio T80", "Purée de betterave", "Curcuma frais", "Levain liquide", "Huile d'olive", "Sel marin"],
+                technique: "Technique de marbrage par superposition et pliage de pâtes colorées naturellement, sans additifs."
+            }
+        ],
+        'viennoiserie': [
+            {
+                title: "Croissant Bicolore Matcha-Vanille",
+                description: "Un croissant innovant combinant deux pâtes feuilletées, l'une nature à la vanille et l'autre au thé matcha, créant un effet visuel spectaculaire et des saveurs contrastées.",
+                ingredients: ["Beurre AOP", "Farine T45", "Poudre de matcha", "Vanille de Madagascar", "Lait entier", "Sucre blond"],
+                technique: "Superposition de deux pâtes colorées différemment avant le tourage pour créer un effet bicolore en spirale."
+            },
+            {
+                title: "Pain au Chocolat Caramélisé au Miso",
+                description: "Une version audacieuse du pain au chocolat avec une touche umami apportée par le miso qui vient caraméliser la surface. L'intérieur reste traditionnel avec un chocolat noir de qualité qui fond délicatement.",
+                ingredients: ["Pâte feuilletée levée", "Chocolat noir 70%", "Miso blanc", "Beurre clarifié", "Sucre muscovado", "Fleur de sel"],
+                technique: "Application d'une fine couche de miso mélangé à du sucre muscovado avant la cuisson pour une caramélisation unique."
+            },
+            {
+                title: "Brioche Tressée aux Agrumes Confits et Safran",
+                description: "Une brioche moelleuse et aérienne, délicatement parfumée au safran qui lui donne sa couleur dorée, et parsemée d'agrumes confits maison qui apportent fraîcheur et notes acidulées.",
+                ingredients: ["Farine de gruau", "Beurre fin", "Safran", "Agrumes confits", "Œufs fermiers", "Miel d'acacia"],
+                technique: "Tressage complexe à 6 brins et double dorure pour un aspect brillant et une croûte parfaitement développée."
+            }
+        ],
+        'snacking': [
+            {
+                title: "Focaccia Marbrée aux Herbes et Fleurs Comestibles",
+                description: "Une focaccia artistique avec un marbrage naturel créé par différentes herbes fraîches et fleurs comestibles pressées dans la pâte. Chaque bouchée offre une explosion de saveurs aromatiques différentes.",
+                ingredients: ["Farine italienne", "Huile d'olive extra vierge", "Herbes fraîches assorties", "Fleurs comestibles", "Sel de mer", "Ail noir"],
+                technique: "Disposition artistique des herbes et fleurs pour créer un tableau comestible, avec une hydratation élevée pour une texture aérienne."
+            },
+            {
+                title: "Quiche Lorraine Revisitée",
+                description: "Une quiche lorraine modernisée avec une pâte brisée au beurre noisette, une garniture crémeuse aux lardons fumés et comté affiné. Servie en portions individuelles pour un snacking gourmand.",
+                ingredients: ["Pâte brisée", "Lardons fumés", "Comté affiné", "Crème fraîche", "Œufs fermiers", "Muscade fraîche"],
+                technique: "Cuisson à basse température pour une texture fondante et un cœur crémeux parfaitement cuit."
+            },
+            {
+                title: "Sandwich Cubique au Pastrami et Pickles Maison",
+                description: "Un sandwich architectural de forme cubique parfaite, avec du pain de mie au levain, du pastrami tranché finement, des pickles de légumes maison croquants et une sauce moutarde-miel légèrement épicée.",
+                ingredients: ["Pain de mie au levain", "Pastrami artisanal", "Pickles maison", "Sauce moutarde-miel", "Cheddar affiné", "Roquette"],
+                technique: "Pressage du sandwich dans un moule cubique pour une présentation géométrique moderne et des saveurs parfaitement fusionnées."
+            }
+        ]
     };
 
-    // Sélectionner des ingrédients de base selon le type
-    const baseForType = baseIngredients[creationType] || ['farine', 'sucre', 'beurre', 'œufs'];
+    // Sélectionner une recette aléatoire du type demandé
+    const recipesByType = predefinedRecipes[creationType] || predefinedRecipes['patisserie'];
+    const randomRecipe = recipesByType[Math.floor(Math.random() * recipesByType.length)];
 
-    // Ajouter des ingrédients de saison
-    let seasonalIngredients = [];
+    // Si des ingrédients clés sont spécifiés, les ajouter à la recette
     if (occasion === 'saison') {
-        // Privilégier les fruits pour les pâtisseries et les légumes pour le reste
-        if (creationType === 'patisserie') {
-            seasonalIngredients = getRandomItems(seasonalProduce.fruits, 2);
-        } else if (creationType === 'snacking') {
-            seasonalIngredients = getRandomItems(seasonalProduce.vegetables, 2);
-        } else {
-            // Mélanger fruits et légumes pour les autres types
-            const allProduce = [...seasonalProduce.fruits, ...seasonalProduce.vegetables];
-            seasonalIngredients = getRandomItems(allProduce, 2);
-        }
+        // Ajouter des ingrédients de saison
+        const seasonalIngredients = getRandomItems([...seasonalProduce.fruits, ...seasonalProduce.vegetables], 2);
+        randomRecipe.ingredients = [...randomRecipe.ingredients.slice(0, 4), ...seasonalIngredients];
+
+        // Adapter la description
+        randomRecipe.description = `${randomRecipe.description} Cette création met en valeur les produits de saison du mois de ${getMonthName(currentMonth)}.`;
     }
 
-    // Combiner les ingrédients de base et de saison
-    ingredients = [...baseForType, ...seasonalIngredients];
-
-    // Générer un titre en fonction du type et de la saison
-    const adjectives = ['Délicieuse', 'Savoureuse', 'Rustique', 'Gourmande', 'Traditionnelle', 'Créative'];
-    const randomAdjective = adjectives[Math.floor(Math.random() * adjectives.length)];
-
-    // Noms spécifiques selon le type de création
-    const typeNames = {
-        'patisserie': ['Tarte', 'Gâteau', 'Entremet', 'Crème', 'Mousse'],
-        'boulangerie': ['Pain', 'Fougasse', 'Baguette', 'Boule', 'Ficelle'],
-        'viennoiserie': ['Brioche', 'Croissant', 'Pain au chocolat', 'Chausson', 'Tresse'],
-        'snacking': ['Sandwich', 'Wrap', 'Quiche', 'Focaccia', 'Pizza']
-    };
-
-    const typeName = typeNames[creationType] ?
-        typeNames[creationType][Math.floor(Math.random() * typeNames[creationType].length)] :
-        'Création';
-
-    // Ajouter un ingrédient au titre si c'est de saison
-    let titleIngredient = '';
-    if (seasonalIngredients.length > 0) {
-        titleIngredient = ` aux ${seasonalIngredients[0]}`;
+    // Adapter pour occasion spéciale si nécessaire
+    if (occasion === 'special') {
+        randomRecipe.description = `${randomRecipe.description} Cette création sophistiquée est parfaite pour les occasions spéciales, avec une présentation élégante et des saveurs complexes.`;
     }
-
-    title = `${randomAdjective} ${typeName}${titleIngredient}`;
-
-    // Générer une description
-    const seasonText = occasion === 'saison' ?
-        `Cette recette met en valeur les produits de saison du mois ${getMonthName(currentMonth)}.` :
-        '';
-
-    const occasionText = occasion === 'special' ?
-        'Cette création sophistiquée est parfaite pour les occasions spéciales.' :
-        'Cette recette équilibrée convient parfaitement pour une consommation quotidienne.';
-
-    description = `Une ${creationType} artisanale qui combine des saveurs authentiques et une texture parfaite. ${seasonText} ${occasionText}`;
-
-    // Générer une technique signature
-    const techniques = [
-        'Utilisation d\'une fermentation lente pour développer les arômes',
-        'Incorporation d\'air dans la pâte pour une texture légère',
-        'Cuisson à basse température pour préserver les saveurs',
-        'Technique de feuilletage inversé pour un résultat croustillant',
-        'Méthode de pétrissage spéciale pour une mie alvéolée',
-        'Utilisation d\'un levain naturel pour plus de complexité aromatique'
-    ];
-
-    technique = techniques[Math.floor(Math.random() * techniques.length)];
 
     // Retourner l'idée de recette
-    return {
-        title,
-        description,
-        ingredients,
-        technique
-    };
+    return randomRecipe;
 }
 
 // Fonction pour obtenir le nom du mois
