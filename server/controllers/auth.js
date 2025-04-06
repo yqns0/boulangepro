@@ -30,6 +30,28 @@ exports.login = async (req, res, next) => {
     const { email, password } = req.body;
     console.log('Données reçues:', { email, password: '********' });
 
+    // Vérifier si la base de données est connectée
+    if (!global.dbConnected) {
+      console.log('Base de données non connectée, utilisation du mode dégradé');
+
+      // Si c'est l'utilisateur de démonstration, autoriser la connexion
+      if (email === 'demo@boulangeproapp.com' && password === 'password123') {
+        console.log('Connexion de l\'utilisateur de démonstration en mode dégradé');
+        return res.status(200).json({
+          success: true,
+          token: 'demo-fallback-token-' + Date.now(),
+          message: 'Connexion en mode dégradé (base de données non disponible)'
+        });
+      } else {
+        // Pour les autres utilisateurs, refuser la connexion en mode dégradé
+        console.log('Connexion refusée en mode dégradé pour un utilisateur non-démo');
+        return res.status(503).json({
+          success: false,
+          error: 'Service temporairement indisponible. Veuillez réessayer plus tard ou utiliser le compte de démonstration.'
+        });
+      }
+    }
+
     // Valider l'email et le mot de passe
     if (!email || !password) {
       console.log('Validation échouée: email ou mot de passe manquant');

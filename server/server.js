@@ -8,8 +8,24 @@ const path = require('path');
 // Charger les variables d'environnement
 dotenv.config();
 
+// Variable globale pour suivre l'état de la connexion à la base de données
+global.dbConnected = false;
+
 // Connecter à la base de données
-connectDB();
+console.log('Tentative de connexion à la base de données...');
+connectDB()
+  .then(connection => {
+    if (connection) {
+      global.dbConnected = true;
+      console.log('Base de données connectée et prête');
+    } else {
+      console.log('Application en mode dégradé - certaines fonctionnalités seront limitées');
+    }
+  })
+  .catch(err => {
+    console.error('Erreur lors de l\'initialisation de la connexion à la base de données:', err);
+    console.log('Application en mode dégradé - certaines fonctionnalités seront limitées');
+  });
 
 // Initialiser l'application Express
 const app = express();
@@ -42,10 +58,26 @@ app.use((req, res, next) => {
 
 // Route de test pour vérifier que l'API est accessible
 app.get('/api/test', (req, res) => {
+  // Obtenir l'adresse IP du serveur
+  const { networkInterfaces } = require('os');
+  const nets = networkInterfaces();
+  const ips = [];
+
+  for (const name of Object.keys(nets)) {
+    for (const net of nets[name]) {
+      // Ignorer les adresses de loopback et non IPv4
+      if (net.family === 'IPv4' && !net.internal) {
+        ips.push(net.address);
+      }
+    }
+  }
+
   res.json({
     success: true,
     message: 'API accessible',
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    server_ip: ips,
+    client_ip: req.headers['x-forwarded-for'] || req.socket.remoteAddress
   });
 });
 
