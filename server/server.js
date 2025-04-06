@@ -17,13 +17,28 @@ const app = express();
 // Middleware
 app.use(express.json({ limit: '50mb' }));
 
-// Configuration CORS plus permissive pour le débogage
+// Configuration CORS spécifique pour Netlify et environnement local
 app.use(cors({
-  origin: '*', // Permet toutes les origines pendant le débogage
+  origin: ['https://boulangepro.netlify.app', 'http://localhost:3000', 'http://127.0.0.1:5500'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
+// Middleware pour ajouter manuellement les en-têtes CORS (solution de secours)
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', 'https://boulangepro.netlify.app');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  res.header('Access-Control-Allow-Credentials', 'true');
+
+  // Gérer les requêtes OPTIONS (preflight)
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
+  next();
+});
 
 // Route de test pour vérifier que l'API est accessible
 app.get('/api/test', (req, res) => {

@@ -81,12 +81,20 @@
                         document.getElementById('auth-alert').textContent = 'API connectée avec succès';
                         document.getElementById('auth-alert').className = 'auth-alert success';
                         document.getElementById('auth-alert').style.display = 'block';
+
+                        // Pré-remplir avec l'utilisateur de démonstration
+                        document.getElementById('email').value = 'demo@boulangeproapp.com';
+                        document.getElementById('password').value = 'password123';
                     })
                     .catch(error => {
                         console.error('Erreur de test API:', error);
-                        document.getElementById('auth-alert').textContent = `Erreur de connexion à l'API: ${error.message}`;
-                        document.getElementById('auth-alert').className = 'auth-alert error';
+                        document.getElementById('auth-alert').innerHTML = `Erreur de connexion à l'API: ${error.message}<br><small>Utilisez l'utilisateur de démonstration pour vous connecter en mode hors ligne.</small>`;
+                        document.getElementById('auth-alert').className = 'auth-alert warning';
                         document.getElementById('auth-alert').style.display = 'block';
+
+                        // Pré-remplir avec l'utilisateur de démonstration
+                        document.getElementById('email').value = 'demo@boulangeproapp.com';
+                        document.getElementById('password').value = 'password123';
                     });
 
                 // Vérifier si l'utilisateur est déjà connecté
