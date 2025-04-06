@@ -3,6 +3,51 @@ const router = express.Router();
 const axios = require('axios');
 const geminiConfig = require('../config/gemini');
 
+// Endpoint de test pour vérifier que l'API Gemini fonctionne
+router.get('/test-gemini', async (req, res) => {
+    try {
+        console.log('Test de l\'API Gemini...');
+
+        // Construire l'URL avec la clé API
+        const apiUrl = `${geminiConfig.apiUrl}?key=${geminiConfig.apiKey}`;
+
+        // Requête simple pour tester l'API
+        const response = await axios.post(
+            apiUrl,
+            {
+                contents: [{
+                    parts: [{ text: "Génère une recette de pain simple en format JSON avec les champs: title, description, ingredients (array), technique" }]
+                }],
+                generationConfig: {
+                    temperature: 0.7,
+                    maxOutputTokens: 1024
+                }
+            },
+            {
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                timeout: geminiConfig.timeout
+            }
+        );
+
+        return res.json({
+            success: true,
+            message: 'API Gemini fonctionne correctement',
+            data: response.data
+        });
+    } catch (error) {
+        console.error('Erreur lors du test de l\'API Gemini:', error);
+
+        return res.status(500).json({
+            success: false,
+            message: 'Erreur lors du test de l\'API Gemini',
+            error: error.message,
+            details: error.response ? error.response.data : null
+        });
+    }
+});
+
 // Endpoint pour générer une idée de recette
 router.post('/generate-recipe-idea', async (req, res) => {
     try {
@@ -73,45 +118,33 @@ IMPORTANT: Tu dois absolument respecter les contraintes suivantes:
 4. Réponds UNIQUEMENT au format JSON avec les champs: title, description, ingredients (array), technique.
 5. Pour chaque ingrédient, indique le nom de l'ingrédient uniquement, sans quantité ni unité.`;
 
-        // Prompt complet avec instructions
-        const fullPrompt = `${systemPrompt}\n\n${prompt}\n\nRéponds STRICTEMENT au format JSON suivant sans aucun texte avant ou après:\n{\n  "title": "Titre de la recette",\n  "description": "Description détaillée",\n  "ingredients": ["Ingrédient 1", "Ingrédient 2", "..."],\n  "technique": "Technique signature"\n}`;
+        // Prompt simplifié pour l'API Gemini
+        const fullPrompt = `Génère une recette de ${creationType} créative.
+
+Si des ingrédients sont spécifiés (${keyIngredients || 'aucun'}), utilise-les.
+
+Réponds UNIQUEMENT au format JSON suivant:
+{
+  "title": "Titre de la recette",
+  "description": "Description détaillée",
+  "ingredients": ["Ingrédient 1", "Ingrédient 2", "Ingrédient 3"],
+  "technique": "Technique signature"
+}`;
+
+        console.log('Prompt final:', fullPrompt);
 
         while (retryCount <= maxRetries) {
             try {
                 // Construire l'URL avec la clé API
                 const apiUrl = `${geminiConfig.apiUrl}?key=${geminiConfig.apiKey}`;
 
+                // Requête très simplifiée pour l'API Gemini
                 response = await axios.post(
                     apiUrl,
                     {
                         contents: [{
                             parts: [{ text: fullPrompt }]
-                        }],
-                        generationConfig: {
-                            temperature: 0.7,
-                            topP: 0.95,
-                            topK: 40,
-                            maxOutputTokens: 1024,
-                            responseMimeType: "application/json"
-                        },
-                        safetySettings: [
-                            {
-                                category: "HARM_CATEGORY_HARASSMENT",
-                                threshold: "BLOCK_NONE"
-                            },
-                            {
-                                category: "HARM_CATEGORY_HATE_SPEECH",
-                                threshold: "BLOCK_NONE"
-                            },
-                            {
-                                category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
-                                threshold: "BLOCK_NONE"
-                            },
-                            {
-                                category: "HARM_CATEGORY_DANGEROUS_CONTENT",
-                                threshold: "BLOCK_NONE"
-                            }
-                        ]
+                        }]
                     },
                     {
                         headers: {
@@ -127,9 +160,18 @@ IMPORTANT: Tu dois absolument respecter les contraintes suivantes:
                 retryCount++;
                 console.error('Erreur Gemini:', error.response ? error.response.data : error.message);
 
-                // Vérifier si c'est une erreur de limite de taux
-                if (error.response && (error.response.status === 429 || error.response.status === 403)) {
-                    console.log(`Limite de taux atteinte, tentative ${retryCount}/${maxRetries}`);
+                // Afficher les détails de l'erreur pour le débogage
+                console.error('Détails de l\'erreur Gemini:', error);
+                if (error.response) {
+                    console.error('Statut:', error.response.status);
+                    console.error('Données:', error.response.data);
+                    console.error('Headers:', error.response.headers);
+                }
+
+                // Vérifier si c'est une erreur de limite de taux ou autre erreur connue
+                if (error.response && (error.response.status === 429 || error.response.status === 403 ||
+                                      error.response.status === 400)) {
+                    console.log(`Erreur API Gemini (${error.response.status}), tentative ${retryCount}/${maxRetries}`);
 
                     if (retryCount <= maxRetries) {
                         // Attendre avant de réessayer
@@ -144,6 +186,17 @@ IMPORTANT: Tu dois absolument respecter les contraintes suivantes:
         }
 
         // Extraire la réponse de Gemini
+        console.log('Réponse complète de Gemini:', JSON.stringify(response.data));
+
+        // Vérifier si la réponse a la structure attendue
+        if (!response.data.candidates || !response.data.candidates[0] ||
+            !response.data.candidates[0].content || !response.data.candidates[0].content.parts ||
+            !response.data.candidates[0].content.parts[0] || !response.data.candidates[0].content.parts[0].text) {
+
+            console.error('Structure de réponse Gemini inattendue:', response.data);
+            throw new Error('Format de réponse Gemini invalide');
+        }
+
         const content = response.data.candidates[0].content.parts[0].text;
         console.log('Réponse brute de Gemini:', content);
 

@@ -16,9 +16,9 @@ if (!apiKey) {
 }
 
 module.exports = {
-    apiKey: apiKey || 'AIzaSyDJC5a7eNBznUFYCwdBRzLQ_NKmMmXlqGQ', // Utiliser la clé API définie dans .env
-    model: 'gemini-2.0-flash', // Modèle à utiliser
-    apiUrl: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent',
+    apiKey: 'AIzaSyDJC5a7eNBznUFYCwdBRzLQ_NKmMmXlqGQ', // Clé API fixe pour garantir le fonctionnement
+    model: 'gemini-1.5-flash', // Modèle à utiliser (version plus stable)
+    apiUrl: 'https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent',
     timeout: 30000, // Timeout en millisecondes
-    isConfigured: !!apiKey // Indique si la clé API est configurée
+    isConfigured: true // Toujours configuré avec la clé fixe
 };

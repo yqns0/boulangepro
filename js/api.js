@@ -533,37 +533,61 @@ const ingredients = {
 
 // Fonctions pour l'IA
 const ai = {
+    // Tester l'API Gemini
+    testGeminiAPI: async () => {
+        try {
+            console.log('Test de l\'API Gemini...');
+
+            const response = await fetch(`${API_URL}/ai/test-gemini`, {
+                method: 'GET',
+                headers: getHeaders()
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Erreur lors du test de l\'API Gemini');
+            }
+
+            console.log('Résultat du test Gemini:', data);
+            return data;
+        } catch (error) {
+            console.error('Erreur lors du test de l\'API Gemini:', error);
+            throw error;
+        }
+    },
+
     // Générer une idée de recette
     generateRecipeIdea: async (params) => {
         try {
             console.log('Génération d\'une idée de recette avec les paramètres:', params);
 
             // Réinitialiser le compteur d'erreurs si on fait une nouvelle tentative
-            localStorage.setItem('ai_error_count', '0');
+            localStorage.removeItem('ai_offline_mode');
+            localStorage.removeItem('ai_offline_mode_auto');
+            localStorage.removeItem('ai_error_count');
 
-            // Vérifier si le mode hors ligne est activé manuellement
-            const offlineMode = localStorage.getItem('ai_offline_mode') === 'true';
+            // Force le mode en ligne pour cette requête
+            console.log('Mode en ligne forcé pour cette requête');
 
-            if (offlineMode) {
-                console.log('Mode hors ligne activé manuellement, utilisation des suggestions locales');
-                throw new Error('Mode hors ligne activé');
-            }
-
-            // Vérifier si nous sommes en mode démo avec un token de secours
-            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-            if (token && token.startsWith('demo-fallback-token-')) {
-                console.log('Mode démo détecté, utilisation des suggestions locales');
-                throw new Error('Mode démo activé');
-            }
-
-            // Ajouter un timeout pour éviter d'attendre trop longtemps
+            // Ajouter un timeout plus long pour l'API Gemini
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 secondes
+            const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 secondes
 
             try {
+                console.log('Envoi de la requête à l\'API Gemini avec les paramètres:', {
+                    creationType: params.creationType,
+                    keyIngredients: params.keyIngredients,
+                    occasion: params.occasion,
+                    currentMonth: params.currentMonth || (new Date().getMonth() + 1)
+                });
+
                 const response = await fetch(`${API_URL}/ai/generate-recipe-idea`, {
                     method: 'POST',
-                    headers: getHeaders(),
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': getToken() ? `Bearer ${getToken()}` : ''
+                    },
                     body: JSON.stringify({
                         creationType: params.creationType,
                         keyIngredients: params.keyIngredients,
@@ -575,14 +599,20 @@ const ai = {
 
                 clearTimeout(timeoutId);
 
-                const data = await response.json();
-
+                // Vérifier si la réponse est OK avant de parser le JSON
                 if (!response.ok) {
-                    throw new Error(data.error || 'Erreur lors de la communication avec l\'API Gemini');
+                    const errorData = await response.json().catch(() => ({}));
+                    console.error('Réponse d\'erreur du serveur:', response.status, errorData);
+                    throw new Error(errorData.error || `Erreur ${response.status} lors de la communication avec l'API Gemini`);
                 }
 
-                // Réinitialiser le compteur d'erreurs si la requête réussit
-                localStorage.setItem('ai_error_count', '0');
+                // Parser la réponse JSON
+                const data = await response.json().catch(e => {
+                    console.error('Erreur lors du parsing de la réponse JSON:', e);
+                    throw new Error('Format de réponse invalide de l\'API Gemini');
+                });
+
+                console.log('Réponse de l\'API Gemini:', data);
 
                 // Si la réponse n'est pas au format attendu, essayer de la formater
                 if (typeof data === 'string') {

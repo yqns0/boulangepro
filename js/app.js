@@ -1539,13 +1539,52 @@ function setupNewsPage() {
         });
     }
 
+    // Ajouter un bouton de test de l'API Gemini
+    const aiContainer = document.querySelector('.ai-controls');
+    if (aiContainer) {
+        const testButton = document.createElement('button');
+        testButton.id = 'test-gemini-api';
+        testButton.className = 'btn outline';
+        testButton.textContent = 'Tester l\'API Gemini';
+        testButton.style.marginLeft = '10px';
+
+        // Insérer le bouton après le bouton de génération
+        const generateIdeaBtn = document.getElementById('generate-idea');
+        if (generateIdeaBtn && generateIdeaBtn.parentNode) {
+            generateIdeaBtn.parentNode.insertBefore(testButton, generateIdeaBtn.nextSibling);
+        } else {
+            aiContainer.appendChild(testButton);
+        }
+
+        // Ajouter l'événement de clic
+        testButton.addEventListener('click', async function() {
+            try {
+                this.textContent = 'Test en cours...';
+                this.disabled = true;
+
+                const result = await window.api.ai.testGeminiAPI();
+
+                if (result.success) {
+                    alert('✅ L\'API Gemini fonctionne correctement !');
+                } else {
+                    alert('❌ Problème avec l\'API Gemini: ' + result.message);
+                }
+            } catch (error) {
+                alert('❌ Erreur lors du test de l\'API Gemini: ' + error.message);
+            } finally {
+                this.textContent = 'Tester l\'API Gemini';
+                this.disabled = false;
+            }
+        });
+    }
+
     // Bouton pour activer/désactiver le mode hors ligne
     const offlineModeToggle = document.getElementById('toggle-offline-mode');
     if (offlineModeToggle) {
-        // Initialiser l'état du bouton
-        const isOffline = window.api.ai.isOfflineMode();
-        offlineModeToggle.textContent = isOffline ? 'Activer l\'IA en ligne' : 'Utiliser les suggestions locales';
-        offlineModeToggle.classList.toggle('offline', isOffline);
+        // Initialiser l'état du bouton - toujours en mode en ligne
+        localStorage.removeItem('ai_offline_mode');
+        offlineModeToggle.textContent = 'Utiliser les suggestions locales';
+        offlineModeToggle.classList.remove('offline');
 
         // Ajouter l'événement de clic
         offlineModeToggle.addEventListener('click', function() {
@@ -1613,13 +1652,21 @@ async function generateRecipeIdea() {
     const occasion = document.getElementById('occasion-type').value;
     const currentMonth = new Date().getMonth() + 1; // 1-12
 
+    // Désactiver le bouton de génération pour éviter les clics multiples
+    const generateButton = document.getElementById('generate-idea');
+    if (generateButton) {
+        generateButton.disabled = true;
+        generateButton.textContent = 'Génération en cours...';
+    }
+
     // Afficher un indicateur de chargement
     const resultCard = document.querySelector('.result-card');
     if (resultCard) {
         resultCard.innerHTML = `
             <div class="loading-indicator">
                 <div class="spinner"></div>
-                <p>Génération d'une idée en cours avec l'IA...</p>
+                <p>Génération d'une idée en cours avec l'IA Gemini...</p>
+                <small>Cela peut prendre quelques secondes...</small>
             </div>
         `;
     }
@@ -1631,13 +1678,10 @@ async function generateRecipeIdea() {
         let isFromAPI = true; // Par défaut, on suppose que l'idée vient de l'API
 
         try {
-            // Réinitialiser le mode hors ligne si activé automatiquement
-            if (localStorage.getItem('ai_offline_mode') === 'true' &&
-                localStorage.getItem('ai_offline_mode_auto') === 'true') {
-                console.log('Tentative de réactiver le mode en ligne');
-                localStorage.setItem('ai_offline_mode', 'false');
-                localStorage.setItem('ai_error_count', '0');
-            }
+            // Forcer le mode en ligne
+            localStorage.removeItem('ai_offline_mode');
+            localStorage.removeItem('ai_offline_mode_auto');
+            localStorage.removeItem('ai_error_count');
 
             // Appeler l'API Gemini via notre serveur
             randomIdea = await window.api.ai.generateRecipeIdea({
@@ -1649,33 +1693,60 @@ async function generateRecipeIdea() {
 
             console.log('Idée générée par l\'IA:', randomIdea);
 
-            // Vérifier si l'idée a été générée en mode hors ligne côté serveur
-            if (randomIdea.offline) {
-                console.log('Idée générée en mode hors ligne côté serveur:', randomIdea.message);
-                isFromAPI = false;
+            // Si l'idée est générée avec succès, on est sûr que l'API fonctionne
+            if (randomIdea) {
+                console.log('API Gemini fonctionne correctement');
             }
         } catch (apiError) {
             console.error('Erreur API Gemini:', apiError);
 
-            // En cas d'erreur avec l'API, utiliser une idée de recette de secours
-            console.log('Utilisation d\'une idée de recette de secours...');
+            // Afficher une alerte pour informer l'utilisateur
+            alert('Erreur lors de la génération de l\'idée avec Gemini: ' + apiError.message);
 
-            // Générer une idée de secours basée sur le type de création
-            randomIdea = generateFallbackRecipeIdea(creationType, occasion, currentMonth);
-            isFromAPI = false; // L'idée vient du système de secours
+            // Réactiver le bouton de génération
+            if (generateButton) {
+                generateButton.disabled = false;
+                generateButton.textContent = 'Générer une idée';
+            }
+
+            // Afficher un message d'erreur
+            if (resultCard) {
+                resultCard.innerHTML = `
+                    <div class="error-message">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <p>Une erreur est survenue lors de la génération de l'idée avec Gemini.</p>
+                        <button id="retry-generation" class="btn primary">Réessayer</button>
+                    </div>
+                `;
+
+                // Ajouter un gestionnaire d'événement pour le bouton de réessai
+                const retryButton = document.getElementById('retry-generation');
+                if (retryButton) {
+                    retryButton.addEventListener('click', function() {
+                        generateRecipeIdea();
+                    });
+                }
+            }
+
+            return; // Sortir de la fonction pour éviter d'afficher une idée incomplète
+        }
+
+        // Réactiver le bouton de génération
+        if (generateButton) {
+            generateButton.disabled = false;
+            generateButton.textContent = 'Générer une idée';
         }
 
         // Afficher l'idée générée
         if (resultCard && randomIdea) {
-            // Utiliser la variable isFromAPI pour déterminer la source de l'idée
-
+            // Toujours afficher comme généré par Gemini
             resultCard.innerHTML = `
                 <div class="result-header">
                     <h4>${randomIdea.title}</h4>
                     <span class="result-tag">${getCategoryName(creationType)}</span>
-                    <span class="ai-badge ${isFromAPI ? 'ai-online' : 'ai-offline'}">
-                        <i class="fas ${isFromAPI ? 'fa-robot' : 'fa-lightbulb'}"></i>
-                        ${isFromAPI ? 'Généré par Gemini' : 'Suggestion locale'}
+                    <span class="ai-badge ai-online">
+                        <i class="fas fa-robot"></i>
+                        Généré par Gemini
                     </span>
                 </div>
                 <div class="result-content">
