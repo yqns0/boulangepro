@@ -25,6 +25,15 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
+// Route de test pour vérifier que l'API est accessible
+app.get('/api/test', (req, res) => {
+  res.json({
+    success: true,
+    message: 'API accessible',
+    timestamp: new Date().toISOString()
+  });
+});
+
 // Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/recipes', require('./routes/recipes'));

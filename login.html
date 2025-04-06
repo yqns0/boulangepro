@@ -67,6 +67,28 @@
 
                 console.log('API disponible dans login.html');
 
+                // Tester l'API avant de continuer
+                console.log('Test de l\'API en cours...');
+                fetch(`${window.api.API_URL}/test`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`Erreur HTTP: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('Test API réussi:', data);
+                        document.getElementById('auth-alert').textContent = 'API connectée avec succès';
+                        document.getElementById('auth-alert').className = 'auth-alert success';
+                        document.getElementById('auth-alert').style.display = 'block';
+                    })
+                    .catch(error => {
+                        console.error('Erreur de test API:', error);
+                        document.getElementById('auth-alert').textContent = `Erreur de connexion à l'API: ${error.message}`;
+                        document.getElementById('auth-alert').className = 'auth-alert error';
+                        document.getElementById('auth-alert').style.display = 'block';
+                    });
+
                 // Vérifier si l'utilisateur est déjà connecté
                 if (window.api.auth.isAuthenticated()) {
                     window.location.href = 'index.html';

@@ -25,10 +25,14 @@ exports.register = async (req, res, next) => {
 // @access  Public
 exports.login = async (req, res, next) => {
   try {
+    console.log('Tentative de connexion reçue');
+
     const { email, password } = req.body;
+    console.log('Données reçues:', { email, password: '********' });
 
     // Valider l'email et le mot de passe
     if (!email || !password) {
+      console.log('Validation échouée: email ou mot de passe manquant');
       return res.status(400).json({
         success: false,
         error: 'Veuillez fournir un email et un mot de passe'
@@ -37,19 +41,44 @@ exports.login = async (req, res, next) => {
 
     // Vérifier si c'est l'utilisateur de démonstration
     if (email === 'demo@boulangeproapp.com' && password === 'password123') {
-      // Créer ou récupérer l'utilisateur de démonstration
-      let demoUser = await User.findOne({ email: 'demo@boulangeproapp.com' });
+      console.log('Tentative de connexion avec l\'utilisateur de démonstration');
 
-      if (!demoUser) {
-        // Créer l'utilisateur de démonstration s'il n'existe pas
-        demoUser = await User.create({
-          name: 'Utilisateur Démo',
+      try {
+        // Créer ou récupérer l'utilisateur de démonstration
+        let demoUser = await User.findOne({ email: 'demo@boulangeproapp.com' });
+        console.log('Utilisateur de démonstration trouvé dans la base de données:', !!demoUser);
+
+        if (!demoUser) {
+          console.log('Création de l\'utilisateur de démonstration');
+          // Créer l'utilisateur de démonstration s'il n'existe pas
+          demoUser = await User.create({
+            name: 'Utilisateur Démo',
+            email: 'demo@boulangeproapp.com',
+            password: 'password123'
+          });
+          console.log('Utilisateur de démonstration créé avec succès');
+        }
+
+        console.log('Génération du token pour l\'utilisateur de démonstration');
+        return sendTokenResponse(demoUser, 200, res);
+      } catch (demoError) {
+        console.error('Erreur avec l\'utilisateur de démonstration:', demoError);
+
+        // Créer un utilisateur de démonstration en mémoire si la base de données n'est pas accessible
+        const fallbackDemoUser = {
+          _id: 'demo123',
+          name: 'Utilisateur Démo (Fallback)',
           email: 'demo@boulangeproapp.com',
-          password: 'password123'
-        });
-      }
+          role: 'user',
+          getSignedJwtToken: function() {
+            // Générer un token simple pour le mode de secours
+            return 'demo-fallback-token-' + Date.now();
+          }
+        };
 
-      return sendTokenResponse(demoUser, 200, res);
+        console.log('Utilisation du mode de secours pour l\'utilisateur de démonstration');
+        return sendTokenResponse(fallbackDemoUser, 200, res);
+      }
     }
 
     // Vérifier l'utilisateur normal

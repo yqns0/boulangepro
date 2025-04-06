@@ -4,7 +4,7 @@ const isProduction = window.location.hostname !== 'localhost' && !window.locatio
 
 // Remplacez cette URL par celle de votre backend déployé sur Render
 const API_URL = isProduction
-    ? 'https://boulangepro-api.onrender.com'  // URL de l'API en production (sans /api)
+    ? 'https://boulangepro-api.onrender.com/api'  // URL de l'API en production (avec /api)
     : 'http://localhost:5000/api';  // URL de l'API en développement local
 
 console.log(`Environnement: ${isProduction ? 'Production' : 'Développement'}`);
