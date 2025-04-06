@@ -1525,6 +1525,12 @@ function clearCalculator() {
 
 // Configuration de la page nouveautés
 function setupNewsPage() {
+    // Réinitialiser le mode hors ligne et le compteur d'erreurs au chargement de la page
+    localStorage.removeItem('ai_offline_mode');
+    localStorage.removeItem('ai_offline_mode_auto');
+    localStorage.removeItem('ai_error_count');
+    console.log('Mode IA réinitialisé au chargement de la page - mode en ligne activé');
+
     // Bouton de génération d'idée
     const generateIdeaBtn = document.getElementById('generate-idea');
     if (generateIdeaBtn) {
@@ -1625,7 +1631,15 @@ async function generateRecipeIdea() {
         let isFromAPI = true; // Par défaut, on suppose que l'idée vient de l'API
 
         try {
-            // Appeler l'API OpenAI via notre serveur
+            // Réinitialiser le mode hors ligne si activé automatiquement
+            if (localStorage.getItem('ai_offline_mode') === 'true' &&
+                localStorage.getItem('ai_offline_mode_auto') === 'true') {
+                console.log('Tentative de réactiver le mode en ligne');
+                localStorage.setItem('ai_offline_mode', 'false');
+                localStorage.setItem('ai_error_count', '0');
+            }
+
+            // Appeler l'API Gemini via notre serveur
             randomIdea = await window.api.ai.generateRecipeIdea({
                 creationType,
                 keyIngredients,
@@ -1634,8 +1648,14 @@ async function generateRecipeIdea() {
             });
 
             console.log('Idée générée par l\'IA:', randomIdea);
+
+            // Vérifier si l'idée a été générée en mode hors ligne côté serveur
+            if (randomIdea.offline) {
+                console.log('Idée générée en mode hors ligne côté serveur:', randomIdea.message);
+                isFromAPI = false;
+            }
         } catch (apiError) {
-            console.error('Erreur API OpenAI:', apiError);
+            console.error('Erreur API Gemini:', apiError);
 
             // En cas d'erreur avec l'API, utiliser une idée de recette de secours
             console.log('Utilisation d\'une idée de recette de secours...');
@@ -1720,37 +1740,8 @@ async function generateRecipeIdea() {
         }
     }
 
-    // Afficher l'idée (utiliser la variable resultCard déjà déclarée)
-    if (resultCard && randomIdea) {
-        resultCard.innerHTML = `
-            <div class="result-header">
-                <h4>${randomIdea.title}</h4>
-                <span class="result-tag">${getCategoryName(creationType)}</span>
-            </div>
-            <div class="result-content">
-                <p>${randomIdea.description}</p>
-                <h5>Ingrédients principaux:</h5>
-                <ul>
-                    ${randomIdea.ingredients.map(ingredient => `<li>${ingredient}</li>`).join('')}
-                </ul>
-                <h5>Technique signature:</h5>
-                <p>${randomIdea.technique}</p>
-            </div>
-            <div class="result-actions">
-                <button class="btn secondary" id="save-inspiration">Sauvegarder l'idée</button>
-                <button class="btn outline" id="create-from-inspiration">Créer une recette</button>
-            </div>
-        `;
-        
-        // Stocker l'idée générée
-        window.currentIdea = {
-            title: randomIdea.title,
-            category: creationType,
-            description: randomIdea.description,
-            ingredients: randomIdea.ingredients,
-            technique: randomIdea.technique
-        };
-    }
+    // Cette section est redondante et cause l'erreur - elle est déjà traitée plus haut
+    // Nous la supprimons pour éviter la référence à randomIdea qui pourrait être undefined à ce stade
 }
 
 // Obtenir les produits de saison pour un mois donné
@@ -2091,7 +2082,7 @@ function getEstimatedQuantity(ingredient, index) {
     }
 }
 
-// Générer une idée de recette de secours en cas d'erreur avec l'API OpenAI
+// Générer une idée de recette de secours en cas d'erreur avec l'API Gemini
 function generateFallbackRecipeIdea(creationType, occasion, currentMonth) {
     console.log('Génération d\'une idée de secours pour:', creationType);
 

@@ -9,11 +9,16 @@ router.post('/generate-recipe-idea', async (req, res) => {
         // Vérifier si l'API Gemini est configurée
         if (!geminiConfig.apiKey || geminiConfig.apiKey === 'votre-cle-api-ici') {
             console.log('Clé API Gemini non configurée, utilisation du mode hors ligne');
-            // Retourner une réponse de secours
-            return res.status(503).json({
-                error: 'Service Gemini non disponible',
+
+            // Générer une idée de secours au lieu de retourner une erreur
+            const fallbackIdea = generateFallbackRecipeIdea(req.body.creationType, req.body.occasion, req.body.currentMonth);
+            console.log('Idée de secours générée:', fallbackIdea);
+
+            // Retourner l'idée de secours avec un indicateur
+            return res.json({
+                ...fallbackIdea,
                 offline: true,
-                message: 'La clé API Gemini n\'est pas configurée. Utilisation du mode hors ligne.'
+                message: 'Idée générée localement car la clé API Gemini n\'est pas configurée.'
             });
         }
 
@@ -227,11 +232,11 @@ IMPORTANT: Tu dois absolument respecter les contraintes suivantes:
     } catch (error) {
         console.error('Erreur lors de la génération de l\'idée de recette:', error);
         
-        // Gérer les erreurs spécifiques à l'API OpenAI
+        // Gérer les erreurs spécifiques à l'API Gemini
         if (error.response && error.response.data) {
-            console.error('Détails de l\'erreur OpenAI:', error.response.data);
-            return res.status(error.response.status).json({ 
-                error: 'Erreur lors de la communication avec l\'API OpenAI',
+            console.error('Détails de l\'erreur Gemini:', error.response.data);
+            return res.status(error.response.status).json({
+                error: 'Erreur lors de la communication avec l\'API Gemini',
                 details: error.response.data.error
             });
         }
@@ -250,6 +255,119 @@ function getCategoryName(category) {
     };
 
     return categories[category] || 'Création Culinaire';
+}
+
+// Fonction pour générer une idée de recette de secours
+function generateFallbackRecipeIdea(creationType, occasion, currentMonth) {
+    console.log('Génération d\'une idée de secours pour:', creationType);
+
+    // Obtenir les produits de saison pour le mois actuel
+    const seasonalProduce = getSeasonalProduce(currentMonth);
+
+    // Sélectionner aléatoirement des ingrédients de saison
+    const getRandomItems = (array, count) => {
+        const shuffled = [...array].sort(() => 0.5 - Math.random());
+        return shuffled.slice(0, count);
+    };
+
+    // Sélectionner des ingrédients en fonction du type de création
+    let ingredients = [];
+    let title = '';
+    let description = '';
+    let technique = '';
+
+    // Bases communes pour chaque type de création
+    const baseIngredients = {
+        'patisserie': ['farine', 'sucre', 'beurre', 'œufs', 'levure chimique'],
+        'boulangerie': ['farine', 'eau', 'sel', 'levure', 'farine complète'],
+        'viennoiserie': ['farine', 'beurre', 'sucre', 'œufs', 'lait'],
+        'snacking': ['farine', 'fromage', 'œufs', 'herbes aromatiques']
+    };
+
+    // Sélectionner des ingrédients de base selon le type
+    const baseForType = baseIngredients[creationType] || ['farine', 'sucre', 'beurre', 'œufs'];
+
+    // Ajouter des ingrédients de saison
+    let seasonalIngredients = [];
+    if (occasion === 'saison') {
+        // Privilégier les fruits pour les pâtisseries et les légumes pour le reste
+        if (creationType === 'patisserie') {
+            seasonalIngredients = getRandomItems(seasonalProduce.fruits, 2);
+        } else if (creationType === 'snacking') {
+            seasonalIngredients = getRandomItems(seasonalProduce.vegetables, 2);
+        } else {
+            // Mélanger fruits et légumes pour les autres types
+            const allProduce = [...seasonalProduce.fruits, ...seasonalProduce.vegetables];
+            seasonalIngredients = getRandomItems(allProduce, 2);
+        }
+    }
+
+    // Combiner les ingrédients de base et de saison
+    ingredients = [...baseForType, ...seasonalIngredients];
+
+    // Générer un titre en fonction du type et de la saison
+    const adjectives = ['Délicieuse', 'Savoureuse', 'Rustique', 'Gourmande', 'Traditionnelle', 'Créative'];
+    const randomAdjective = adjectives[Math.floor(Math.random() * adjectives.length)];
+
+    // Noms spécifiques selon le type de création
+    const typeNames = {
+        'patisserie': ['Tarte', 'Gâteau', 'Entremet', 'Crème', 'Mousse'],
+        'boulangerie': ['Pain', 'Fougasse', 'Baguette', 'Boule', 'Ficelle'],
+        'viennoiserie': ['Brioche', 'Croissant', 'Pain au chocolat', 'Chausson', 'Tresse'],
+        'snacking': ['Sandwich', 'Wrap', 'Quiche', 'Focaccia', 'Pizza']
+    };
+
+    const typeName = typeNames[creationType] ?
+        typeNames[creationType][Math.floor(Math.random() * typeNames[creationType].length)] :
+        'Création';
+
+    // Ajouter un ingrédient au titre si c'est de saison
+    let titleIngredient = '';
+    if (seasonalIngredients.length > 0) {
+        titleIngredient = ` aux ${seasonalIngredients[0]}`;
+    }
+
+    title = `${randomAdjective} ${typeName}${titleIngredient}`;
+
+    // Générer une description
+    const seasonText = occasion === 'saison' ?
+        `Cette recette met en valeur les produits de saison du mois ${getMonthName(currentMonth)}.` :
+        '';
+
+    const occasionText = occasion === 'special' ?
+        'Cette création sophistiquée est parfaite pour les occasions spéciales.' :
+        'Cette recette équilibrée convient parfaitement pour une consommation quotidienne.';
+
+    description = `Une ${creationType} artisanale qui combine des saveurs authentiques et une texture parfaite. ${seasonText} ${occasionText}`;
+
+    // Générer une technique signature
+    const techniques = [
+        'Utilisation d\'une fermentation lente pour développer les arômes',
+        'Incorporation d\'air dans la pâte pour une texture légère',
+        'Cuisson à basse température pour préserver les saveurs',
+        'Technique de feuilletage inversé pour un résultat croustillant',
+        'Méthode de pétrissage spéciale pour une mie alvéolée',
+        'Utilisation d\'un levain naturel pour plus de complexité aromatique'
+    ];
+
+    technique = techniques[Math.floor(Math.random() * techniques.length)];
+
+    // Retourner l'idée de recette
+    return {
+        title,
+        description,
+        ingredients,
+        technique
+    };
+}
+
+// Fonction pour obtenir le nom du mois
+function getMonthName(monthNumber) {
+    const monthNames = [
+        'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
+        'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
+    ];
+    return monthNames[monthNumber - 1] || '';
 }
 
 // Fonction pour obtenir les produits de saison pour un mois donné
@@ -305,7 +423,7 @@ function getSeasonalProduce(month) {
             vegetables: ['carotte', 'poireau', 'chou', 'céleri', 'betterave']
         }
     };
-    
+
     return seasonalProduceByMonth[month] || { fruits: [], vegetables: [] };
 }
 

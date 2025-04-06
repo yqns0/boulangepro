@@ -538,11 +538,14 @@ const ai = {
         try {
             console.log('Génération d\'une idée de recette avec les paramètres:', params);
 
-            // Vérifier si le mode hors ligne est activé
+            // Réinitialiser le compteur d'erreurs si on fait une nouvelle tentative
+            localStorage.setItem('ai_error_count', '0');
+
+            // Vérifier si le mode hors ligne est activé manuellement
             const offlineMode = localStorage.getItem('ai_offline_mode') === 'true';
 
             if (offlineMode) {
-                console.log('Mode hors ligne activé, utilisation des suggestions locales');
+                console.log('Mode hors ligne activé manuellement, utilisation des suggestions locales');
                 throw new Error('Mode hors ligne activé');
             }
 
@@ -575,7 +578,7 @@ const ai = {
                 const data = await response.json();
 
                 if (!response.ok) {
-                    throw new Error(data.error || 'Erreur lors de la génération de l\'idée de recette');
+                    throw new Error(data.error || 'Erreur lors de la communication avec l\'API Gemini');
                 }
 
                 // Réinitialiser le compteur d'erreurs si la requête réussit
@@ -624,9 +627,24 @@ const ai = {
             if (errorCount >= 3) {
                 console.log('Trop d\'erreurs consécutives, activation du mode hors ligne');
                 localStorage.setItem('ai_offline_mode', 'true');
+                localStorage.setItem('ai_offline_mode_auto', 'true'); // Marquer comme activé automatiquement
 
-                // Afficher une notification à l'utilisateur (dans une implémentation réelle)
-                // alert('Mode hors ligne activé en raison de problèmes de connexion à l\'API');
+                // Afficher une notification à l'utilisateur
+                alert('Mode hors ligne activé automatiquement en raison de problèmes de connexion à l\'API Gemini. Vous pouvez le désactiver manuellement avec le bouton "Activer l\'IA en ligne".');
+            }
+
+            // Si l'erreur contient "Mode hors ligne activé" ou "Mode démo activé", ne pas la propager
+            // car c'est un comportement attendu
+            if (error.message && (error.message.includes('Mode hors ligne activé') ||
+                                 error.message.includes('Mode démo activé'))) {
+                // Créer une réponse de secours
+                return {
+                    title: "Suggestion locale",
+                    description: "Cette idée a été générée localement car le mode hors ligne est activé.",
+                    ingredients: ["Ingrédient 1", "Ingrédient 2", "Ingrédient 3"],
+                    technique: "Technique de préparation standard",
+                    offline: true
+                };
             }
 
             throw error;
@@ -637,7 +655,16 @@ const ai = {
     toggleOfflineMode: (enable) => {
         localStorage.setItem('ai_offline_mode', enable ? 'true' : 'false');
         localStorage.setItem('ai_error_count', '0');
-        console.log(`Mode hors ligne ${enable ? 'activé' : 'désactivé'}`);
+
+        // Si on désactive le mode hors ligne, supprimer le marqueur automatique
+        if (!enable) {
+            localStorage.removeItem('ai_offline_mode_auto');
+        } else {
+            // Si on active manuellement, marquer comme non-automatique
+            localStorage.setItem('ai_offline_mode_auto', 'false');
+        }
+
+        console.log(`Mode hors ligne ${enable ? 'activé' : 'désactivé'} manuellement`);
         return enable;
     },
 
