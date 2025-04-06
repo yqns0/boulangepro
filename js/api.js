@@ -546,6 +546,13 @@ const ai = {
                 throw new Error('Mode hors ligne activé');
             }
 
+            // Vérifier si nous sommes en mode démo avec un token de secours
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            if (token && token.startsWith('demo-fallback-token-')) {
+                console.log('Mode démo détecté, utilisation des suggestions locales');
+                throw new Error('Mode démo activé');
+            }
+
             // Ajouter un timeout pour éviter d'attendre trop longtemps
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 secondes

@@ -6,8 +6,19 @@ const geminiConfig = require('../config/gemini');
 // Endpoint pour générer une idée de recette
 router.post('/generate-recipe-idea', async (req, res) => {
     try {
+        // Vérifier si l'API Gemini est configurée
+        if (!geminiConfig.apiKey || geminiConfig.apiKey === 'votre-cle-api-ici') {
+            console.log('Clé API Gemini non configurée, utilisation du mode hors ligne');
+            // Retourner une réponse de secours
+            return res.status(503).json({
+                error: 'Service Gemini non disponible',
+                offline: true,
+                message: 'La clé API Gemini n\'est pas configurée. Utilisation du mode hors ligne.'
+            });
+        }
+
         const { creationType, keyIngredients, occasion, currentMonth } = req.body;
-        
+
         if (!creationType) {
             return res.status(400).json({ error: 'Le type de création est requis' });
         }
